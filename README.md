@@ -1,1 +1,1 @@
-# -yet-another-discord-bot
+# yet-another-discord-bot
