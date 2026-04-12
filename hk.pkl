@@ -1,0 +1,57 @@
+amends "package://github.com/jdx/hk/releases/download/v1.41.0/hk@1.41.0#/Config.pkl"
+import "package://github.com/jdx/hk/releases/download/v1.41.0/hk@1.41.0#/Builtins.pkl"
+
+env {
+  ["NODE_ENV"] = "development"
+}
+
+local linters = new Mapping<String, Step> {
+  ["eslint"] = (Builtins.eslint) {
+    batch = true
+    glob = List("src/**/*.ts")
+    check = "bunx eslint {{ files }}"
+    fix = "bunx eslint --fix {{ files }}"
+  }
+  ["tsc"] = (Builtins.tsc) {
+    exclusive = true
+    check = "bunx tsc --noEmit"
+  }
+  ["knip"] = (Builtins.knip) {
+    check = "bunx knip --no-progress"
+  }
+  ["gitleaks"] = (Builtins.gitleaks) {
+    check = "gitleaks protect --staged --redact --no-banner"
+  }
+  ["detect-private-key"] = (Builtins.detect_private_key) {
+    glob = List(
+      "src/**/*",
+      ".env*",
+      "*.pem",
+      "*.key",
+      "*.p12",
+      "*.pfx"
+    )
+  }
+  ["check-merge-conflict"] = (Builtins.check_merge_conflict) {
+    glob = List("src/**/*", "*.md", "*.json", "*.yml", "*.yaml", "*.toml")
+  }
+  ["check-added-large-files"] = (Builtins.check_added_large_files) {
+    glob = List("src/**/*")
+  }
+  ["actionlint"] = Builtins.actionlint  // remove if no GitHub Actions
+}
+
+hooks {
+  ["pre-commit"] {
+    fix = true
+    stash = "git"
+    steps = linters
+  }
+  ["fix"] {
+    fix = true
+    steps = linters
+  }
+  ["check"] {
+    steps = linters
+  }
+}
