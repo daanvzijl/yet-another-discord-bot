@@ -8,8 +8,6 @@ export class DiscordClient {
         this.raw = new Client({
             intents: [
                 GatewayIntentBits.Guilds,
-                GatewayIntentBits.GuildMessages,
-                GatewayIntentBits.MessageContent,
             ],
         });
     }
