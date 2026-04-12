@@ -1,0 +1,14 @@
+{
+  "schedule": ["* * * * 5"],
+  "enabledManagers": ["mise"],
+  "packageRules": [
+    {
+      "matchUpdateTypes": ["minor", "patch"],
+      "groupName": "mise minor updates"
+    },
+    {
+      "matchUpdateTypes": ["major"],
+      "groupName": "mise major updates"
+    }
+  ]
+}

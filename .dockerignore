@@ -1,0 +1,12 @@
+node_modules
+.env
+*.log
+tests
+.git
+.gitignore
+README.md
+justfile
+mise.toml
+renovate.json
+eslint.config.mts
+tsconfig.json
