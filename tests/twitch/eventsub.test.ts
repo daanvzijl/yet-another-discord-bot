@@ -6,13 +6,14 @@ test("notifies when stream goes online", async () => {
     const monitor = new FakeMonitor();
 
     await monitor.onStreamOnline("Teleqraph", async (event) => {
-        await notifier.notifyGoLive(event.username, event.title, event.game);
+        await notifier.notifyGoLive(event.username, event.title, event.game, event.profileImage);
     });
 
     await monitor.simulateOnline({
         username: "Teleqraph",
         title: "coding session",
         game: "Just Chatting",
+        profileImage: "https://example.com/profile",
     });
 
     expect(notifier.calls).toHaveLength(1);
@@ -20,5 +21,6 @@ test("notifies when stream goes online", async () => {
         username: "Teleqraph",
         title: "coding session",
         game: "Just Chatting",
+        profileImage: "https://example.com/profile",
     });
 });

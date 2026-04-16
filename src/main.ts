@@ -10,7 +10,7 @@ const notifier = new DiscordNotifier(discord, config.discord.liveChannelId, conf
 const monitor = new TwitchEventSubMonitor(config.twitch);
 
 await monitor.onStreamOnline(config.twitch.channelName, async (event) => {
-    await notifier.notifyGoLive(event.username, event.title, event.game);
+    await notifier.notifyGoLive(event.username, event.title, event.game, event.profileImage);
     console.log(`${event.username} went live — ${event.title} (${event.game})`);
 });
 
