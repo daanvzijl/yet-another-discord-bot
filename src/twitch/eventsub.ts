@@ -39,6 +39,7 @@ export class TwitchEventSubMonitor implements StreamMonitor {
                 username: event.broadcasterDisplayName,
                 title: stream?.title || "unknown",
                 game: stream?.gameName || "unknown",
+                profileImage: user.profilePictureUrl
             });
         });
     }

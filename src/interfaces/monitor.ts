@@ -2,6 +2,7 @@ export interface StreamEvent {
     username: string;
     title: string;
     game: string;
+    profileImage: string;
 }
 
 export interface StreamMonitor {

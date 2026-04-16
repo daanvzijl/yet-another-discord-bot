@@ -2,10 +2,10 @@ import type { StreamMonitor, StreamEvent } from "../src/interfaces/monitor.ts";
 import type { StreamNotifier } from "../src/interfaces/notifier.ts";
 
 export class FakeNotifier implements StreamNotifier {
-    readonly calls: { username: string; title: string; game: string }[] = [];
+    readonly calls: { username: string; title: string; game: string, profileImage: string }[] = [];
 
-    async notifyGoLive(username: string, title: string, game: string): Promise<void> {
-        this.calls.push({ username, title, game });
+    async notifyGoLive(username: string, title: string, game: string, profileImage: string): Promise<void> {
+        this.calls.push({ username, title, game, profileImage });
     }
 }
 

@@ -22,6 +22,9 @@ local linters = new Mapping<String, Step> {
   ["gitleaks"] = (Builtins.gitleaks) {
     check = "gitleaks protect --staged --redact --no-banner"
   }
+  ["gitleaks-repo"] = (Builtins.gitleaks) {
+    check = "gitleaks detect --source . --redact --no-banner"
+  }
   ["detect-private-key"] = (Builtins.detect_private_key) {
     glob = List(
       "src/**/*",
@@ -39,6 +42,15 @@ local linters = new Mapping<String, Step> {
     glob = List("src/**/*")
   }
   ["actionlint"] = Builtins.actionlint  // remove if no GitHub Actions
+  ["semgrep"] {
+    check = "semgrep scan --config=auto"
+  }
+  ["osv"] {
+    check = "osv-scanner --lockfile bun.lock"
+  }
+  ["trivy"] {
+    check = "trivy fs . --severity HIGH,CRITICAL"
+  }
 }
 
 hooks {
