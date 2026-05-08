@@ -16,6 +16,7 @@ export const config = {
         token: getEnv("DISCORD_TOKEN"),
         liveChannelId: getEnv("DISCORD_LIVE_CHANNEL_ID"),
         liveMessage: process.env["DISCORD_LIVE_MESSAGE"] ?? "🔴 **{username}** is live — **{title}** ({game})\nhttps://twitch.tv/{username}",
+        pollIntervalMs: Number(process.env["DISCORD_POLL_INTERVAL_MS"] ?? 5 * 60 * 1000),
     },
 };
 
