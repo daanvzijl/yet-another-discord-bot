@@ -37,10 +37,22 @@ export class TwitchEventSubMonitor implements StreamMonitor {
             const stream = await getStream(event.broadcasterId);
             await handler({
                 username: event.broadcasterDisplayName,
-                title: stream?.title || "unknown",
-                game: stream?.gameName || "unknown",
-                profileImage: user.profilePictureUrl
+                broadcasterId: event.broadcasterId,
+                title: stream?.title ?? "unknown",
+                game: stream?.gameName ?? "unknown",
+                thumbnailUrl: stream?.thumbnailUrl ?? "",
+                profileImage: user.profilePictureUrl,
             });
+        });
+    }
+
+    async onStreamOffline(channelName: string, handler: () => Promise<void>): Promise<void> {
+        const user = await apiClient.users.getUserByName(channelName);
+        if (!user) throw new Error(`Twitch user not found: ${channelName}`);
+
+        this.middleware.onStreamOffline(user.id, async () => {
+            console.log(`${user.displayName} went offline`);
+            await handler();
         });
     }
 
