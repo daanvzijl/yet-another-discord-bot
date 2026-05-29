@@ -17,6 +17,7 @@ Run `just install` to get going.
 | `DISCORD_TOKEN`         | Yes      | Discord bot token                                                           |
 | `DISCORD_LIVE_CHANNEL_ID` | Yes    | ID of the channel to send live notifications to                             |
 | `DISCORD_LIVE_MESSAGE`  | No       | Message template. Supports `{username}`, `{title}`, `{game}`. Defaults to `🔴 **{username}** is live — **{title}** ({game})\nhttps://twitch.tv/{username}` |
+| `DISCORD_POLL_INTERVAL_MS` | No    | Interval in ms at which the discord embed gets updated. Defaults to `300000`.  |
 | `TWITCH_CLIENT_ID`      | Yes      | Twitch application client ID                                                |
 | `TWITCH_CLIENT_SECRET`  | Yes      | Twitch application client secret                                            |
 | `TWITCH_WEBHOOK_SECRET` | Yes      | Secret used to verify Twitch webhook requests (10–100 characters)           |
