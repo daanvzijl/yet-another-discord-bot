@@ -2,8 +2,8 @@ import { expect, test } from "bun:test";
 import { FakeNotifier, FakeMonitor } from "../fakes.ts";
 
 const event = {
-    username: "Teleqraph",
-    broadcasterId: "36520931",
+    username: "John",
+    broadcasterId: "01234567",
     title: "coding session",
     game: "Just Chatting",
     thumbnailUrl: "https://example.com/thumb-{width}x{height}.jpg",
@@ -22,7 +22,7 @@ test("notifies when stream goes online", async () => {
 
     expect(notifier.calls).toHaveLength(1);
     expect(notifier.calls[0]).toEqual({
-        username: "Teleqraph",
+        username: "John",
         title: "coding session",
         game: "Just Chatting",
         profileImage: "https://example.com/profile",
@@ -35,11 +35,11 @@ test("notifies when stream goes offline", async () => {
 
     let handle: string | null = null;
 
-    await monitor.onStreamOnline("Teleqraph", async (e) => {
+    await monitor.onStreamOnline("John", async (e) => {
         handle = await notifier.notifyGoLive(e.username, e.title, e.game, e.profileImage);
     });
 
-    await monitor.onStreamOffline("Teleqraph", async () => {
+    await monitor.onStreamOffline("John", async () => {
         if (handle) await notifier.notifyGoOffline(handle);
     });
 
@@ -47,5 +47,5 @@ test("notifies when stream goes offline", async () => {
     await monitor.simulateOffline();
 
     expect(notifier.offlineCalls).toHaveLength(1);
-    expect(notifier.offlineCalls[0]).toBe("handle:Teleqraph");
+    expect(notifier.offlineCalls[0]).toBe("handle:John");
 });
