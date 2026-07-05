@@ -15,7 +15,7 @@
     "eslint": "^10.6.0",
     "eslint-config-prettier": "^10.1.8",
     "globals": "^17.7.0",
-    "knip": "^6.23.0",
+    "knip": "^6.24.0",
     "typescript": "^6.0.3",
     "typescript-eslint": "^8.62.1"
   },
