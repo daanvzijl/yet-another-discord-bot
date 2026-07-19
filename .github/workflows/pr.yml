@@ -11,7 +11,7 @@ jobs:
 
       - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6
 
-      - uses: jdx/mise-action@e6a8b3978addb5a52f2b4cd9d91eafa7f0ab959d
+      - uses: jdx/mise-action@dad1bfd3df957f44999b559dd69dc1671cb4e9ea
 
       - run: bun install
 
