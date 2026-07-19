@@ -6,7 +6,7 @@
     "@twurple/auth": "^8.1.4",
     "@twurple/eventsub-http": "^8.1.4",
     "@types/express": "^5.0.6",
-    "discord.js": "^14.26.5",
+    "discord.js": "^14.27.0",
     "express": "^5.2.1"
   },
   "devDependencies": {
@@ -15,7 +15,7 @@
     "eslint": "^10.7.0",
     "eslint-config-prettier": "^10.1.8",
     "globals": "^17.7.0",
-    "knip": "^6.26.0",
+    "knip": "^6.27.0",
     "typescript": "^6.0.3",
     "typescript-eslint": "^8.64.0"
   },
