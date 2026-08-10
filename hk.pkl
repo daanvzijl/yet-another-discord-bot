@@ -42,7 +42,7 @@ local linters = new Mapping<String, Step> {
   }
   ["actionlint"] = Builtins.actionlint  // remove if no GitHub Actions
   ["semgrep"] {
-    check = "semgrep scan --config=auto"
+    check = "semgrep scan --config=auto --x-parmap"
   }
   ["osv"] {
     check = "osv-scanner --lockfile bun.lock"
