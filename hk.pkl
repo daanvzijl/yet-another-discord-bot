@@ -6,11 +6,10 @@ env {
 }
 
 local linters = new Mapping<String, Step> {
-  ["eslint"] = (Builtins.eslint) {
+  ["ox-lint"] = (Builtins.ox_lint) {
     batch = true
-    glob = List("src/**/*.ts")
-    check = "bunx eslint {{ files }}"
-    fix = "bunx eslint --fix {{ files }}"
+    check = "bunx oxlint --deny-warnings {{ files }}"
+    fix = "bunx oxlint --deny-warnings --fix {{ files }}"
   }
   ["tsc"] = (Builtins.tsc) {
     exclusive = true
