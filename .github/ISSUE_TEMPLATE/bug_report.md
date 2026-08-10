@@ -1,37 +1,34 @@
 ---
-
-name: Bug Report
-about: Report something that isn't working correctly
+name: Bug report
+about: Report a bug
 title: "[Bug] "
 labels: bug
 assignees: ""
--------------
+---
 
 ## Description
 
-<!-- Describe the bug clearly and concisely. -->
+<!-- Clearly describe the bug. -->
 
-## Steps to Reproduce
+## Steps to reproduce
 
 1.
 2.
 3.
 
-## Expected Behavior
+## Expected behavior
 
 <!-- What did you expect to happen? -->
 
-## Actual Behavior
+## Actual behavior
 
 <!-- What actually happened? -->
 
 ## Environment
 
-* OS:
-* Version:
-* Other relevant information:
+- OS:
+- Version:
 
-## Additional Information
+## Additional information
 
-<!-- Add logs, screenshots, error messages, or other relevant information. -->
-
+<!-- Logs, screenshots, error messages, etc. -->

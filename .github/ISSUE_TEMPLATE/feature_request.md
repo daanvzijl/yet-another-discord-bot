@@ -1,29 +1,27 @@
 ---
-
-name: Feature Request
-about: Suggest an improvement or new feature
+name: Feature request
+about: Suggest an idea or improvement
 title: "[Feature] "
 labels: enhancement
 assignees: ""
--------------
+---
 
 ## Description
 
-<!-- Describe the feature or improvement you are proposing. -->
+<!-- Describe the feature or improvement. -->
 
-## Problem
+## Motivation
 
-<!-- What problem would this feature solve? -->
+<!-- What problem does this solve? -->
 
-## Proposed Solution
+## Proposed solution
 
-<!-- Describe how you think this should work. -->
+<!-- Describe how you think it should work. -->
 
-## Alternatives Considered
+## Alternatives considered
 
-<!-- Describe any alternative solutions or workarounds you considered. -->
+<!-- Describe alternatives or workarounds you've considered. -->
 
-## Additional Information
+## Additional information
 
-<!-- Add examples, mockups, references, or other relevant information. -->
-
+<!-- Anything else relevant. -->
