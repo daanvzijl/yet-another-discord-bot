@@ -25,8 +25,10 @@ export const streamAlerts = pgTable("stream_alerts", {
 
 export const liveSessions = pgTable("live_sessions", {
     id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
-    alertId: integer("alert_id").notNull().references(() => streamAlerts.id, { onDelete: "cascade" }),
-    // copied from the alert so the message can still be found if the alert's channel changes mid-stream
+    // null once the alert is removed, the session is still closed when the stream ends
+    alertId: integer("alert_id").references(() => streamAlerts.id, { onDelete: "set null" }),
+    // copied from the alert so the message can still be found if the alert changes or is removed mid-stream
+    broadcasterId: text("broadcaster_id").notNull(),
     channelId: text("channel_id").notNull(),
     messageId: text("message_id").notNull(),
     startedAt: timestamp("started_at", { withTimezone: true }).notNull(),

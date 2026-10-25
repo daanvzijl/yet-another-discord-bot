@@ -33,7 +33,7 @@ test("rejects unknown Twitch users and channels", async () => {
 
 test("rejects a duplicate alert", async () => {
     await alerts.create({ twitchLogin: "john", channelId: "c1" });
-    expect(alerts.create({ twitchLogin: "john", channelId: "c1" })).rejects.toThrow();
+    expect(alerts.create({ twitchLogin: "john", channelId: "c1" })).rejects.toThrow("already exists");
 });
 
 test("removes an alert", async () => {

@@ -13,12 +13,14 @@
 
 - Multiple Discord servers per instance, each with its own alerts.
 - CLI: `alert list`, `alert add <twitch-login> <discord-channel-id> [template]`, `alert remove <id>`.
-- `docker-compose.yml` with the bot and Postgres.
+- `docker-compose.yml` with the bot, Postgres and an optional Cloudflare tunnel (`tunnel` profile).
+- Announcement channels are supported.
 - Live messages are persisted and keep updating after a restart.
 
 ### Changed
 
 - On start, only EventSub subscriptions for `PUBLIC_HOSTNAME` are pruned.
+- A stream is closed by the poll only after two checks in a row report it offline.
 
 ### Known issues
 
@@ -30,7 +32,7 @@
 1. Upgrade while no stream is live.
 2. Stop all old instances.
 3. Invite the bot to every Discord server it posts in.
-4. Copy `.env.example` to `.env` and fill it in. Keep the old `TWITCH_CHANNEL_NAME`, `DISCORD_LIVE_CHANNEL_ID` and `DISCORD_LIVE_MESSAGE` to import them.
+4. Copy `.env.example` to `.env` and fill it in. For the Cloudflare tunnel, set `COMPOSE_PROFILES=tunnel` and `TUNNEL_TOKEN`, and route `PUBLIC_HOSTNAME` to `http://bot:3000`. Keep the old `TWITCH_CHANNEL_NAME`, `DISCORD_LIVE_CHANNEL_ID` and `DISCORD_LIVE_MESSAGE` to import them.
 5. Run `docker compose up -d`.
 6. Add the remaining alerts and restart:
    ```sh

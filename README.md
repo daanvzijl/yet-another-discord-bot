@@ -42,7 +42,7 @@ Message templates support `{username}`, `{title}` and `{game}`. Without one, ale
 
 ## Docker
 
-The [`docker-compose.yml`](docker-compose.yml) runs the bot together with Postgres. Copy `.env.example` to `.env`, fill it in, and run:
+The [`docker-compose.yml`](docker-compose.yml) runs the bot with Postgres, and optionally a Cloudflare tunnel (set `COMPOSE_PROFILES=tunnel` and `TUNNEL_TOKEN`). Copy `.env.example` to `.env`, fill it in, and run:
 
 ```sh
 docker compose up -d

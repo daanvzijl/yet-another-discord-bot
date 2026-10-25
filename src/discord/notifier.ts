@@ -1,4 +1,4 @@
-import { EmbedBuilder, TextChannel, type Message } from "discord.js";
+import { ChannelType, EmbedBuilder, type Message, type NewsChannel, type TextChannel } from "discord.js";
 import type { StreamEvent, StreamStatus } from "../interfaces/monitor.ts";
 import type { MessageRef, StreamNotifier } from "../interfaces/notifier.ts";
 import type { DiscordClient } from "./client.ts";
@@ -55,9 +55,11 @@ export class DiscordNotifier implements StreamNotifier {
         await message.edit({ content: message.content, embeds: [embed] });
     }
 
-    private async fetchChannel(channelId: string): Promise<TextChannel> {
+    private async fetchChannel(channelId: string): Promise<TextChannel | NewsChannel> {
         const channel = await this.client.raw.channels.fetch(channelId);
-        if (!channel || !(channel instanceof TextChannel)) throw new Error(`Channel ${channelId} not found or not a text channel`);
+        if (channel?.type !== ChannelType.GuildText && channel?.type !== ChannelType.GuildAnnouncement) {
+            throw new Error(`Channel ${channelId} not found or not a text or announcement channel`);
+        }
         return channel;
     }
 

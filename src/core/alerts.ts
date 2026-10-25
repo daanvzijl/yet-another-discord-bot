@@ -33,8 +33,9 @@ export class AlertService {
                 twitchLogin: user.login,
                 channelId: channel.id,
                 messageTemplate: input.messageTemplate ?? null,
-            }).returning();
-            return alert!;
+            }).onConflictDoNothing().returning();
+            if (!alert) throw new Error(`An alert for ${user.login} in channel ${channel.id} already exists`);
+            return alert;
         });
     }
 

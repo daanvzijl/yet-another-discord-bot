@@ -1,5 +1,5 @@
-import { beforeEach, expect, test } from "bun:test";
-import { isNull } from "drizzle-orm";
+import { afterEach, beforeEach, expect, mock, spyOn, test } from "bun:test";
+import { eq, isNull } from "drizzle-orm";
 import { StreamAlertService } from "../../src/core/stream-alerts.ts";
 import type { Db } from "../../src/db/client.ts";
 import { guilds, liveSessions, streamAlerts } from "../../src/db/schema.ts";
@@ -35,6 +35,10 @@ beforeEach(async () => {
     ]);
 });
 
+// failures are logged and skipped, silence them so the test output stays readable
+const silenceErrors = () => spyOn(console, "error").mockImplementation(() => {});
+afterEach(() => mock.restore());
+
 const openSessions = () => db.select().from(liveSessions).where(isNull(liveSessions.endedAt));
 
 test("watches each enabled broadcaster once", async () => {
@@ -59,11 +63,30 @@ test("a duplicate online event doesn't post again", async () => {
     expect(notifier.liveCalls).toHaveLength(2);
 });
 
+test("simultaneous duplicate online events post once", async () => {
+    await Promise.all([service.handleOnline(event), service.handleOnline(event)]);
+
+    expect(notifier.liveCalls).toHaveLength(2);
+    expect(await openSessions()).toHaveLength(2);
+});
+
+test("a stream is still closed after its alert was removed", async () => {
+    await service.handleOnline(event);
+    await db.delete(streamAlerts).where(eq(streamAlerts.channelId, "c1"));
+
+    await service.handleOffline("111");
+
+    expect(notifier.offlineCalls.map((r) => r.channelId).toSorted()).toEqual(["c1", "c2"]);
+    expect(await openSessions()).toHaveLength(0);
+});
+
 test("one failing guild doesn't block the others", async () => {
     notifier.failingChannels.add("c1");
+    const errors = silenceErrors();
 
     await service.handleOnline(event);
 
+    expect(errors).toHaveBeenCalledTimes(1);
     expect(notifier.liveCalls.map((c) => c.channelId)).toEqual(["c2"]);
     expect(await openSessions()).toHaveLength(1);
 });
@@ -79,9 +102,11 @@ test("going offline updates the messages and closes the sessions", async () => {
 test("a session is closed even when the offline message can't be edited", async () => {
     await service.handleOnline(event);
     notifier.failingChannels.add("c1");
+    const errors = silenceErrors();
 
     await service.handleOffline("111");
 
+    expect(errors).toHaveBeenCalledTimes(1);
     expect(await openSessions()).toHaveLength(0);
 });
 
@@ -91,9 +116,23 @@ test("refreshing updates live streams and closes ended ones", async () => {
     streams.live.set("111", { title: "new title", game: "Chess", thumbnailUrl: "" });
 
     await service.refreshLiveSessions();
+    await service.refreshLiveSessions();
 
-    expect(notifier.updateCalls).toHaveLength(2);
+    expect(notifier.updateCalls).toHaveLength(4);
     expect(notifier.updateCalls.every((c) => c.status.title === "new title")).toBe(true);
     expect(notifier.offlineCalls).toHaveLength(1);
+    expect(await openSessions()).toHaveLength(2);
+});
+
+test("a single missed refresh doesn't close the session", async () => {
+    await service.handleOnline(event);
+
+    await service.refreshLiveSessions();
+    streams.live.set("111", { title: "back", game: "Chess", thumbnailUrl: "" });
+    await service.refreshLiveSessions();
+    streams.live.delete("111");
+    await service.refreshLiveSessions();
+
+    expect(notifier.offlineCalls).toHaveLength(0);
     expect(await openSessions()).toHaveLength(2);
 });

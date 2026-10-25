@@ -1,4 +1,5 @@
-# Your Cloudflare tunnel should route the PUBLIC_HOSTNAME to bot:3000. Postgres is never exposed.
+# Twitch must reach the bot on port 3000 at PUBLIC_HOSTNAME. Postgres is never exposed.
+# Optional Cloudflare tunnel: set TUNNEL_TOKEN and COMPOSE_PROFILES=tunnel, and route PUBLIC_HOSTNAME to http://bot:3000.
 services:
   bot:
     image: ghcr.io/daanvzijl/yet-another-discord-bot:latest
@@ -8,6 +9,16 @@ services:
     depends_on:
       db:
         condition: service_healthy
+    restart: unless-stopped
+
+  tunnel:
+    image: docker.io/cloudflare/cloudflared:latest
+    profiles: [tunnel]
+    command: tunnel --no-autoupdate run
+    environment:
+      TUNNEL_TOKEN: ${TUNNEL_TOKEN:-}
+    depends_on:
+      - bot
     restart: unless-stopped
 
   db:
