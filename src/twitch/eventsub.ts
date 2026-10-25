@@ -1,59 +1,64 @@
 import { EventSubMiddleware } from "@twurple/eventsub-http";
+import type { ApiClient } from "@twurple/api";
 import express, { type Express } from "express";
 import type { StreamMonitor, StreamEvent } from "../interfaces/monitor.ts";
-import { config } from "../config.ts";
-import { apiClient } from "./client.ts";
+import type { TwitchConfig } from "../config.ts";
+import type { TwitchStreams } from "./client.ts";
 
-async function getStream(broadcasterId: string, retries = 5, delayMs = 2000) {
-    for (let i = 0; i < retries; i++) {
-        const stream = await apiClient.streams.getStreamByUserId(broadcasterId);
-        if (stream) return stream;
-        console.log(`Stream not ready, retrying in ${delayMs}ms... (${i + 1}/${retries})`);
-        await new Promise((resolve) => setTimeout(resolve, delayMs));
-    }
-    return null;
-}
+const PATH_PREFIX = "/twitch";
 
 export class TwitchEventSubMonitor implements StreamMonitor {
     private readonly app: Express = express();
     private readonly middleware: EventSubMiddleware;
+    private readonly subscriptionIds = new Set<string>();
+    private onlineHandler: (event: StreamEvent) => Promise<void> = async () => {};
+    private offlineHandler: (broadcasterId: string) => Promise<void> = async () => {};
 
-    constructor(private readonly cfg = config.twitch) {
+    constructor(
+        private readonly api: ApiClient,
+        private readonly streams: TwitchStreams,
+        private readonly cfg: TwitchConfig,
+    ) {
         this.middleware = new EventSubMiddleware({
-            apiClient,
-            hostName: this.cfg.publicHostname,
-            pathPrefix: "/twitch",
-            secret: this.cfg.webhookSecret,
+            apiClient: api,
+            hostName: cfg.publicHostname,
+            pathPrefix: PATH_PREFIX,
+            secret: cfg.webhookSecret,
         });
     }
 
-    async onStreamOnline(channelName: string, handler: (event: StreamEvent) => Promise<void>): Promise<void> {
-        const user = await apiClient.users.getUserByName(channelName);
-        if (!user) throw new Error(`Twitch user not found: ${channelName}`);
-        console.log("Subscribing for user:", user.id, user.displayName);
+    onStreamOnline(handler: (event: StreamEvent) => Promise<void>): void {
+        this.onlineHandler = handler;
+    }
 
-        this.middleware.onStreamOnline(user.id, async (event) => {
+    onStreamOffline(handler: (broadcasterId: string) => Promise<void>): void {
+        this.offlineHandler = handler;
+    }
+
+    watch(broadcasterId: string): void {
+        const online = this.middleware.onStreamOnline(broadcasterId, async (event) => {
             console.log(`${event.broadcasterDisplayName} went live`);
-            const stream = await getStream(event.broadcasterId);
-            await handler({
+            const [stream, user] = await Promise.all([
+                this.streams.waitForStream(event.broadcasterId),
+                event.getBroadcaster(),
+            ]);
+            await this.onlineHandler({
                 username: event.broadcasterDisplayName,
                 broadcasterId: event.broadcasterId,
                 title: stream?.title ?? "unknown",
-                game: stream?.gameName ?? "unknown",
+                game: stream?.game ?? "unknown",
                 thumbnailUrl: stream?.thumbnailUrl ?? "",
                 profileImage: user.profilePictureUrl,
             });
         });
-    }
 
-    async onStreamOffline(channelName: string, handler: () => Promise<void>): Promise<void> {
-        const user = await apiClient.users.getUserByName(channelName);
-        if (!user) throw new Error(`Twitch user not found: ${channelName}`);
-
-        this.middleware.onStreamOffline(user.id, async () => {
-            console.log(`${user.displayName} went offline`);
-            await handler();
+        const offline = this.middleware.onStreamOffline(broadcasterId, async (event) => {
+            console.log(`${event.broadcasterDisplayName} went offline`);
+            await this.offlineHandler(event.broadcasterId);
         });
+
+        this.subscriptionIds.add(online.id);
+        this.subscriptionIds.add(offline.id);
     }
 
     async start(): Promise<void> {
@@ -64,20 +69,29 @@ export class TwitchEventSubMonitor implements StreamMonitor {
 
         this.middleware.apply(this.app);
 
-        const existing = await apiClient.eventSub.getSubscriptions();
-        for (const sub of existing.data) {
-            await apiClient.eventSub.deleteSubscription(sub.id);
-        }
-        console.log("Cleared", existing.data.length, "subscriptions");
-
         await new Promise<void>((resolve) => this.app.listen(3000, () => resolve()));
+        // resumes existing Twitch subscriptions with a matching callback, and creates the missing ones
         await this.middleware.markAsReady();
+        await this.pruneStaleSubscriptions();
     }
 
-    async stop(): Promise<void> {
-        const existing = await apiClient.eventSub.getSubscriptions();
-        for (const sub of existing.data) {
-            await apiClient.eventSub.deleteSubscription(sub.id);
+    /**
+     * Deletes subscriptions pointing at this host that are no longer watched, e.g. after an alert was removed.
+     * Subscriptions for other hosts are left alone, as they may belong to another deployment using the same Twitch app.
+     */
+    private async pruneStaleSubscriptions(): Promise<void> {
+        const callbackPrefix = `https://${this.cfg.publicHostname}${PATH_PREFIX}/event/`;
+        const existing = await this.api.eventSub.getSubscriptionsPaginated().getAll();
+
+        let pruned = 0;
+        for (const sub of existing) {
+            const transport = sub._transport;
+            if (transport.method !== "webhook" || !transport.callback.startsWith(callbackPrefix)) continue;
+            if (this.subscriptionIds.has(transport.callback.slice(callbackPrefix.length))) continue;
+
+            await this.api.eventSub.deleteSubscription(sub.id);
+            pruned++;
         }
+        console.log(`Watching ${this.subscriptionIds.size / 2} broadcaster(s), pruned ${pruned} stale subscription(s)`);
     }
 }

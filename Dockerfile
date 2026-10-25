@@ -14,4 +14,5 @@ LABEL org.opencontainers.image.source="https://github.com/daanvzijl/yet-another-
 LABEL org.opencontainers.image.licenses="MIT"
 LABEL org.opencontainers.image.description="Yet another Discord bot"
 
+USER bun
 ENTRYPOINT ["bun", "run", "src/main.ts"]

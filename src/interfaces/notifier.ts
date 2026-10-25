@@ -1,5 +1,12 @@
-export interface StreamNotifier<TMessage = unknown> {
-    notifyGoLive(username: string, title: string, game: string, profileImage: string): Promise<TMessage>;
-    notifyUpdate(message: TMessage, title: string, game: string, thumbnailUrl: string, startedAt: Date): Promise<void>;
-    notifyGoOffline(message: TMessage): Promise<void>;
+import type { StreamEvent, StreamStatus } from "./monitor.ts";
+
+export interface MessageRef {
+    channelId: string;
+    messageId: string;
+}
+
+export interface StreamNotifier {
+    notifyGoLive(channelId: string, content: string, event: StreamEvent): Promise<MessageRef>;
+    notifyUpdate(ref: MessageRef, status: StreamStatus, startedAt: Date): Promise<void>;
+    notifyGoOffline(ref: MessageRef): Promise<void>;
 }
