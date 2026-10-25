@@ -131,6 +131,20 @@ test("refreshing updates live streams and closes ended ones", async () => {
     expect(await openSessions()).toHaveLength(2);
 });
 
+test("a failing broadcaster doesn't block refreshing the others", async () => {
+    await service.handleOnline(event);
+    await service.handleOnline({ ...event, broadcasterId: "222", username: "Jane" });
+    streams.failing.add("111");
+    streams.live.set("222", { title: "still live", game: "Chess", thumbnailUrl: "" });
+    const errors = silenceErrors();
+
+    await service.refreshLiveSessions();
+
+    expect(errors).toHaveBeenCalledTimes(1);
+    expect(notifier.updateCalls.map((c) => c.status.title)).toEqual(["still live"]);
+    expect(await openSessions()).toHaveLength(3);
+});
+
 test("a single missed refresh doesn't close the session", async () => {
     await service.handleOnline(event);
 

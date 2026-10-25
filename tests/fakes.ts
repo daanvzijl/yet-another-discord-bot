@@ -27,8 +27,10 @@ export class FakeNotifier implements StreamNotifier {
 
 export class FakeStreams implements StreamStatusSource {
     readonly live = new Map<string, StreamStatus>();
+    readonly failing = new Set<string>();
 
     async getStream(broadcasterId: string): Promise<StreamStatus | null> {
+        if (this.failing.has(broadcasterId)) throw new Error(`Twitch API error for ${broadcasterId}`);
         return this.live.get(broadcasterId) ?? null;
     }
 }
