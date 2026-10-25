@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## v0.0.11 (2026-10-25)
 
 ### Breaking
 
