@@ -53,8 +53,8 @@ Multi-platform images are published for `linux/amd64` and `linux/arm64`.
 ## Development
 
 ```sh
-just db-up                 # start a local postgres, then set DATABASE_URL=postgres://bot:bot@localhost:5432/bot
-just run                   # run the bot
+just run                   # run the bot, starts a local postgres unless DATABASE_URL is set
+just db-down               # stop the local postgres and discard its data
 just test                  # run tests (uses an in-memory postgres, no database needed)
 just lint                  # run all linters
 just db-generate <name>    # generate a migration after changing src/db/schema.ts
