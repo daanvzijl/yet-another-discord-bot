@@ -38,5 +38,3 @@
    docker compose restart bot
    ```
 7. Remove the old variables from `.env`.
-
-Rollback: run image `0.0.10` with the old `.env`.
