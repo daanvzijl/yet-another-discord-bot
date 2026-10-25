@@ -31,9 +31,9 @@ jobs:
 
           bump=""
           case ",${labels}," in
-            *,release:major,*) bump=major ;;
-            *,release:minor,*) bump=minor ;;
-            *,release:patch,*) bump=patch ;;
+            *,release:major,*) bump="major" ;;
+            *,release:minor,*) bump="minor" ;;
+            *,release:patch,*) bump="patch" ;;
           esac
 
           echo "Labels: ${labels:-<none>}, bump: ${bump:-<none>}"
