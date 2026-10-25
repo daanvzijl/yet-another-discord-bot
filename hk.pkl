@@ -17,6 +17,7 @@ local linters = new Mapping<String, Step> {
   }
   ["knip"] = (Builtins.knip) {
     check = "bunx knip --no-progress"
+    fix = null
   }
   ["gitleaks"] = (Builtins.gitleaks) {
     check = "gitleaks protect --staged --redact --no-banner"
