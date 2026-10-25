@@ -1,6 +1,6 @@
 # Yet another Discord bot
 
-A Discord bot that sends a notification when a Twitch channel goes live.
+A Discord bot that sends a notification when a Twitch channel goes live. One instance can serve multiple Discord servers, each with their own alerts.
 
 ## Setup
 
@@ -12,30 +12,40 @@ Run `just install` to get going.
 
 ## Configuration
 
-| Variable                | Required | Description                                                                 |
-| ----------------------- | -------- | --------------------------------------------------------------------------- |
-| `DISCORD_TOKEN`         | Yes      | Discord bot token                                                           |
-| `DISCORD_LIVE_CHANNEL_ID` | Yes    | ID of the channel to send live notifications to                             |
-| `DISCORD_LIVE_MESSAGE`  | No       | Message template. Supports `{username}`, `{title}`, `{game}`. Defaults to `🔴 **{username}** is live — **{title}** ({game})\nhttps://twitch.tv/{username}` |
-| `DISCORD_POLL_INTERVAL_MS` | No    | Interval in ms at which the discord embed gets updated. Defaults to `300000`.  |
-| `TWITCH_CLIENT_ID`      | Yes      | Twitch application client ID                                                |
-| `TWITCH_CLIENT_SECRET`  | Yes      | Twitch application client secret                                            |
-| `TWITCH_WEBHOOK_SECRET` | Yes      | Secret used to verify Twitch webhook requests (10–100 characters)           |
-| `TWITCH_CHANNEL_NAME`   | Yes      | Twitch channel name to monitor                                              |
-| `PUBLIC_HOSTNAME`       | Yes      | Publicly reachable hostname for Twitch to send webhook events to            |
+Secrets and infrastructure are configured with environment variables. Alerts (which Twitch channel posts to which Discord channel) live in the database, and are managed with the [CLI](#managing-alerts).
+
+| Variable                   | Required | Description                                                                  |
+| -------------------------- | -------- | ---------------------------------------------------------------------------- |
+| `DATABASE_URL`             | Yes      | Postgres connection string. Migrations run automatically on start.           |
+| `DISCORD_TOKEN`            | Yes      | Discord bot token                                                            |
+| `DISCORD_POLL_INTERVAL_MS` | No       | Interval in ms at which live embeds get updated. Defaults to `300000`.       |
+| `TWITCH_CLIENT_ID`         | Yes      | Twitch application client ID                                                 |
+| `TWITCH_CLIENT_SECRET`     | Yes      | Twitch application client secret                                             |
+| `TWITCH_WEBHOOK_SECRET`    | Yes      | Secret used to verify Twitch webhook requests (10–100 characters)            |
+| `PUBLIC_HOSTNAME`          | Yes      | Publicly reachable hostname for Twitch to send webhook events to (port 3000) |
+
+### Upgrading from the single channel setup
+
+`TWITCH_CHANNEL_NAME`, `DISCORD_LIVE_CHANNEL_ID` and `DISCORD_LIVE_MESSAGE` are no longer needed. If they are set when the bot starts with an empty database, they are imported as the first alert, after which they can be removed.
+
+## Managing alerts
+
+```sh
+just cli alert list
+just cli alert add <twitch-login> <discord-channel-id> ["{username} is live: {title} ({game})"]
+just cli alert remove <id>
+```
+
+In Docker, run `docker compose exec bot bun run src/cli.ts alert ...` instead. Restart the bot afterwards to apply changes.
+
+Message templates support `{username}`, `{title}` and `{game}`. Without one, alerts use `🔴 **{username}** is live — **{title}** ({game})\nhttps://twitch.tv/{username}`.
 
 ## Docker
 
+The [`docker-compose.yml`](docker-compose.yml) runs the bot together with Postgres. Copy `.env.example` to `.env`, fill it in, and run:
+
 ```sh
-docker run \
-  -e DISCORD_TOKEN=your_token \
-  -e DISCORD_LIVE_CHANNEL_ID=your_channel_id \
-  -e TWITCH_CLIENT_ID=your_client_id \
-  -e TWITCH_CLIENT_SECRET=your_client_secret \
-  -e TWITCH_WEBHOOK_SECRET=your_webhook_secret \
-  -e TWITCH_CHANNEL_NAME=your_channel \
-  -e PUBLIC_HOSTNAME=your_hostname \
-  ghcr.io/daanvzijl/yet-another-discord-bot:latest
+docker compose up -d
 ```
 
 Multi-platform images are published for `linux/amd64` and `linux/arm64`.
@@ -43,8 +53,11 @@ Multi-platform images are published for `linux/amd64` and `linux/arm64`.
 ## Development
 
 ```sh
-just test   # run tests
-just lint   # run all linters
+just db-up                 # start a local postgres, then set DATABASE_URL=postgres://bot:bot@localhost:5432/bot
+just run                   # run the bot
+just test                  # run tests (uses an in-memory postgres, no database needed)
+just lint                  # run all linters
+just db-generate <name>    # generate a migration after changing src/db/schema.ts
 ```
 
 ## Release
