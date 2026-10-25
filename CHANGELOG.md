@@ -22,6 +22,10 @@
 - On start, only EventSub subscriptions for `PUBLIC_HOSTNAME` are pruned.
 - A stream is closed by the poll only after two checks in a row report it offline.
 
+### Fixed
+
+- `$` in stream titles, usernames and games is shown as-is.
+
 ### Known issues
 
 - Alert changes require a restart.

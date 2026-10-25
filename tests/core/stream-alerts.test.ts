@@ -56,6 +56,13 @@ test("going live notifies every guild with an alert for the broadcaster, using i
     expect(await openSessions()).toHaveLength(2);
 });
 
+test("a disabled alert doesn't post", async () => {
+    await service.handleOnline({ ...event, broadcasterId: "333", username: "Off" });
+
+    expect(notifier.liveCalls).toHaveLength(0);
+    expect(await openSessions()).toHaveLength(0);
+});
+
 test("a duplicate online event doesn't post again", async () => {
     await service.handleOnline(event);
     await service.handleOnline(event);

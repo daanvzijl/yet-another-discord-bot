@@ -20,9 +20,9 @@ export async function bootstrap(config: Config) {
 }
 
 /** Imports the pre-database env config (TWITCH_CHANNEL_NAME and DISCORD_LIVE_CHANNEL_ID), once. */
-export async function importLegacyConfig(config: Config, alerts: AlertService): Promise<void> {
-    if (!config.legacy || !(await alerts.isEmpty())) return;
+export async function importLegacyConfig(legacy: Config["legacy"], alerts: AlertService): Promise<void> {
+    if (!legacy || !(await alerts.isEmpty())) return;
 
-    const alert = await alerts.create(config.legacy);
+    const alert = await alerts.create(legacy);
     console.log(`Imported legacy config as alert #${alert.id}: ${alert.twitchLogin} → ${alert.channelId}. The legacy env vars can now be removed.`);
 }

@@ -7,7 +7,7 @@ import { TwitchEventSubMonitor } from "./twitch/eventsub.ts";
 
 const config = loadConfig();
 const { db, twitchApi, twitchStreams, alerts } = await bootstrap(config);
-await importLegacyConfig(config, alerts);
+await importLegacyConfig(config.legacy, alerts);
 
 const discord = new DiscordClient(config.discord);
 await discord.connect();

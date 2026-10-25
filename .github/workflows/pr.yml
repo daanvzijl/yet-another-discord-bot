@@ -3,27 +3,84 @@ name: PR
 on:
   pull_request:
 
+permissions:
+  contents: read
+
 jobs:
   lint:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
 
-      - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6
-
       - uses: jdx/mise-action@8418fedb1110381a0d3ba51a7a415d7c1b884550
 
-      - run: bun install
+      - run: bun install --frozen-lockfile
 
-      - run: hk check
+      - run: hk check --all
 
   test:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+
+      - uses: jdx/mise-action@8418fedb1110381a0d3ba51a7a415d7c1b884550
+        with:
+          install_args: bun
+
+      - run: bun install --frozen-lockfile
+
+      - name: Test
+        shell: bash
+        run: bun test --coverage 2>&1 | tee test-output.txt
+
+      - name: Build coverage report
+        run: |
+          set -e
+
+          total=$(awk -F'|' '/^All files/ {gsub(/ /, "", $3); print $3 "%"}' test-output.txt)
+
+          {
+            echo "### Test coverage: ${total}"
+            echo
+            echo "<details><summary>Per file</summary>"
+            echo
+            echo '```'
+            awk '/^-+\|/ {f=1} f && /\|/' test-output.txt
+            echo '```'
+            echo
+            echo "</details>"
+          } > coverage.md
+
+          cat coverage.md >> "$GITHUB_STEP_SUMMARY"
+
+      # Fork and Dependabot PRs get a read-only token, so commenting would fail.
+      - name: Comment coverage on PR
+        if: >-
+          github.event.pull_request.head.repo.full_name == github.repository &&
+          github.actor != 'dependabot[bot]'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR: ${{ github.event.pull_request.number }}
+        run: |
+          gh pr comment "$PR" --repo "${{ github.repository }}" --edit-last --create-if-none --body-file coverage.md
+
+  docker:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
 
-      - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@99012661954931238ded8c8b007157a8430204e1
 
-      - run: bun install
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069
 
-      - run: bun test
+      - name: Build
+        uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc
+        with:
+          push: false
+          platforms: linux/amd64,linux/arm64
+          cache-from: type=gha
