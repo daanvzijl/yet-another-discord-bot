@@ -65,7 +65,7 @@ export class StreamAlertService {
                 }
                 await this.forEach(broadcasterSessions, (session) => this.notifier.notifyUpdate(session, status, session.startedAt), `update for ${broadcasterId}`);
             } catch (err) {
-                console.error(`Failed to refresh live sessions for ${broadcasterId}:`, err);
+                console.error("Failed to refresh live sessions for %s:", broadcasterId, err);
             }
         }
     }
@@ -90,7 +90,7 @@ export class StreamAlertService {
     private async forEach<T>(items: T[], action: (item: T) => Promise<void>, label: string): Promise<void> {
         const results = await Promise.allSettled(items.map(action));
         for (const result of results) {
-            if (result.status === "rejected") console.error(`Failed ${label}:`, result.reason);
+            if (result.status === "rejected") console.error("Failed %s:", label, result.reason);
         }
     }
 }

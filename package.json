@@ -25,7 +25,6 @@
       "tests/**/*.test.ts"
     ],
     "ignoreDependencies": [
-      "bun-types",
       "oxlint"
     ]
   },
